@@ -1,0 +1,23 @@
+* vtt paragraph splitter
+
+Example: (from [[https://youtu.be/vwy7NpUlTTA]])
+
+#+begin_src vtt
+00:00:00.000 --> 00:00:01.500
+hiho∼大家好！我是志祺！
+
+00:00:01.500 --> 00:00:04.425
+今天就讓圖文不符用七分鐘的時間
+
+00:00:04.425 --> 00:00:06.250
+和大家一起來聊聊
+
+00:00:06.250 --> 00:00:09.220
+「大排長龍是不是台灣人的專利」？
+
+00:00:17.320 --> 00:00:18.900
+每次只要一放連假
+#+end_src
+
+If current start time - previous end time is more than, say, a second, add an extra newline when copying lines over.
+
