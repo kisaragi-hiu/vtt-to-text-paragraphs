@@ -1,6 +1,25 @@
 * vtt paragraph splitter
 
-Example: (from [[https://youtu.be/vwy7NpUlTTA]])
+Extract text from subtitle files for further analysis.
+
+If current start time - previous end time is more than /epsilon/ (default 100ms), an extra newline is added when copying lines over.
+
+** Usage
+
+#+begin_src sh
+pnpm install # install dependencies
+npx tsx main.ts a-file a-directory-of-vtt-files …
+#+end_src
+
+Options:
+
+- =--epsilon=: number of milliseconds between lines to consider as separate paragraphs. Default: 100ms.
+- =--force=: don't skip files whose output file already exist
+- =--help=: show a help message
+
+** Example
+
+Excerpt from [[https://youtu.be/vwy7NpUlTTA]]
 
 #+begin_src vtt
 00:00:00.000 --> 00:00:01.500
@@ -19,5 +38,21 @@ hiho∼大家好！我是志祺！
 每次只要一放連假
 #+end_src
 
-If current start time - previous end time is more than, say, a second, add an extra newline when copying lines over.
+Results in:
 
+#+begin_src text
+hiho∼大家好！我是志祺！
+今天就讓圖文不符用七分鐘的時間
+和大家一起來聊聊
+「大排長龍是不是台灣人的專利」？
+
+每次只要一放連假
+#+end_src
+
+** Ethics
+
+I plan to use this to produce plain text scripts from subtitles in order to check word usage among a Taiwanese Mandarin corpus. Basically I'm exploring options for making an alternative to RIME's default essay.txt that is, by default, closer to Taiwanese Mandarin.
+
+I consider using this tool (or any other tool) to produce stuff that would compete with the authors of what's included in a corpus to be immoral.
+
+Yes, I still hand-type everything like a stupid grumpy person.
