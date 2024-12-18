@@ -36,6 +36,7 @@ function main() {
     allowPositionals: true,
     options: {
       help: { type: "boolean", short: "h" },
+      force: { type: "boolean", short: "f" },
     },
   });
   if (parsedArgs.values.help) {
@@ -48,7 +49,11 @@ If an input file is a directory, do it on all .vtt files in the directory
 instead.
 
 Options:
-  --help, -h: show help (this message)`);
+  --force, -f:
+    By default, if the output file already exists then extraction is skipped.
+    This flag forces extraction to be done regardless.
+  --help, -h:
+    Show help (this message)`);
     return;
   }
   if (parsedArgs.positionals.length === 0) {
@@ -70,7 +75,7 @@ Options:
         outFile += ".txt";
       }
       // We check here to skip extractText if we can
-      if (existsSync(outFile)) {
+      if (!parsedArgs.values.force && existsSync(outFile)) {
         skippedCount++;
         continue;
       }
@@ -78,9 +83,13 @@ Options:
       processedCount++;
     }
   }
-  console.log(
-    `Processed ${processedCount} files, skipped ${skippedCount} already extracted files`,
-  );
+  if (parsedArgs.values.force) {
+    console.log(`Processed ${processedCount} files`);
+  } else {
+    console.log(
+      `Processed ${processedCount} files, skipped ${skippedCount} already extracted files`,
+    );
+  }
 }
 
 main();
