@@ -10,9 +10,10 @@ import * as path from "node:path";
 import { parseArgs } from "node:util";
 /**
  * Extract text from subtitles file at `path`.
- * Paragraphs (detected as long pauses) are split in the output.
+ * Paragraphs (detected as pauses longer than `epsilon` in milliseconds) are
+ * split in the output.
  */
-function extractText(path: string) {
+function extractText(path: string, epsilon = 1000) {
   const str = readFileSync(path, { encoding: "utf-8" });
   let prevEnd = 0;
   // Don't bother streaming output (with, say, a generator): we're already
@@ -20,7 +21,7 @@ function extractText(path: string) {
   // use from O(3n) to O(2n) (str, parsed array, output array).
   const out: string[] = [];
   for (const { from: start, to: end, text } of parse(str).entries) {
-    if (start - prevEnd > 1000) {
+    if (start - prevEnd > epsilon) {
       out.push("\n");
     }
     out.push(text);
@@ -37,6 +38,7 @@ function main() {
     options: {
       help: { type: "boolean", short: "h" },
       force: { type: "boolean", short: "f" },
+      epsilon: { type: "string" },
     },
   });
   if (parsedArgs.values.help) {
@@ -49,6 +51,9 @@ If an input file is a directory, do it on all .vtt files in the directory
 instead.
 
 Options:
+  --epsilon <seconds>:
+    The number of seconds between subtitle lines to be treated as a new
+    paragraph. Default: 1 second.
   --force, -f:
     By default, if the output file already exists then extraction is skipped.
     This flag forces extraction to be done regardless.
@@ -60,6 +65,10 @@ Options:
     console.log("Please provide one or more input files");
     return;
   }
+  const parsed = parseFloat(parsedArgs.values.epsilon ?? "");
+  // We get NaN for invalid inputs; NaN > 0 is false so that leads us down the
+  // correct branch
+  const epsilon = parsed > 0 ? parsed * 1000 : 1000;
   let processedCount = 0;
   let skippedCount = 0;
   for (const inArg of parsedArgs.positionals) {
@@ -79,7 +88,7 @@ Options:
         skippedCount++;
         continue;
       }
-      writeFileSync(outFile, extractText(inFile));
+      writeFileSync(outFile, extractText(inFile, epsilon));
       processedCount++;
     }
   }
