@@ -1,5 +1,12 @@
 import { parse } from "@plussub/srt-vtt-parser";
-import { readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import * as path from "node:path";
 import { parseArgs } from "node:util";
 /**
  * Extract text from subtitles file at `path`.
@@ -34,21 +41,46 @@ function main() {
   if (parsedArgs.values.help) {
     console.log(`vtt-to-text-paragraphs [options] <in-file> ...
 
+Extract text from input subtitle files. The extracted text is written to files
+next to the original input files.
+
+If an input file is a directory, do it on all .vtt files in the directory
+instead.
+
 Options:
   --help, -h: show help (this message)`);
     return;
   }
   if (parsedArgs.positionals.length === 0) {
     console.log("Please provide one or more input files");
+    return;
   }
-  for (const inFile of parsedArgs.positionals) {
-    //
-    let outFile = inFile.replace(/\.[^/.]+$/, ".txt");
-    if (outFile === inFile) {
-      outFile += ".txt";
+  let processedCount = 0;
+  let skippedCount = 0;
+  for (const inArg of parsedArgs.positionals) {
+    const stat = statSync(inArg);
+    const inFiles = stat.isDirectory()
+      ? readdirSync(inArg)
+          .filter((file) => file.endsWith(".vtt"))
+          .map((file) => path.join(inArg, file))
+      : [inArg];
+    for (const inFile of inFiles) {
+      let outFile = inFile.replace(/\.[^/.]+$/, ".txt");
+      if (outFile === inFile) {
+        outFile += ".txt";
+      }
+      // We check here to skip extractText if we can
+      if (existsSync(outFile)) {
+        skippedCount++;
+        continue;
+      }
+      writeFileSync(outFile, extractText(inFile));
+      processedCount++;
     }
-    writeFileSync(outFile, extractText(inFile));
   }
+  console.log(
+    `Processed ${processedCount} files, skipped ${skippedCount} already extracted files`,
+  );
 }
 
 main();
