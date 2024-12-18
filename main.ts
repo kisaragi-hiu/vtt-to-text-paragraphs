@@ -13,7 +13,7 @@ import { parseArgs } from "node:util";
  * Paragraphs (detected as pauses longer than `epsilon` in milliseconds) are
  * split in the output.
  */
-function extractText(path: string, epsilon = 1000) {
+function extractText(path: string, epsilon = 100) {
   const str = readFileSync(path, { encoding: "utf-8" });
   let prevEnd = 0;
   // Don't bother streaming output (with, say, a generator): we're already
@@ -51,9 +51,9 @@ If an input file is a directory, do it on all .vtt files in the directory
 instead.
 
 Options:
-  --epsilon <seconds>:
-    The number of seconds between subtitle lines to be treated as a new
-    paragraph. Default: 1 second.
+  --epsilon <ms>:
+    The number of milliseconds between subtitle lines to be treated as a new
+    paragraph. Default: 100 milliseconds.
   --force, -f:
     By default, if the output file already exists then extraction is skipped.
     This flag forces extraction to be done regardless.
@@ -68,7 +68,7 @@ Options:
   const parsed = parseFloat(parsedArgs.values.epsilon ?? "");
   // We get NaN for invalid inputs; NaN > 0 is false so that leads us down the
   // correct branch
-  const epsilon = parsed > 0 ? parsed * 1000 : 1000;
+  const epsilon = parsed > 0 ? parsed : 100;
   let processedCount = 0;
   let skippedCount = 0;
   for (const inArg of parsedArgs.positionals) {
