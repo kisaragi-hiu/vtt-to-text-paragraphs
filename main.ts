@@ -21,8 +21,11 @@ function extractText(path: string, epsilon = 100) {
   // use from O(3n) to O(2n) (str, parsed array, output array).
   const out: string[] = [];
   for (const { from: start, to: end, text } of parse(str).entries) {
-    if (start - prevEnd > epsilon) {
-      out.push("\n");
+    // Don't add a starting newline
+    if (prevEnd > 0) {
+      if (start - prevEnd > epsilon) {
+        out.push("\n");
+      }
     }
     out.push(text);
     out.push("\n");
